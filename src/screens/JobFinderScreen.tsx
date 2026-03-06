@@ -21,6 +21,7 @@ export default function JobFinderScreen({ navigation }: any) {
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
   const jobContext = useContext(JobContext)
   const themeContext = useContext(ThemeContext)
   const darkMode = Boolean(themeContext?.darkMode)
@@ -33,11 +34,17 @@ export default function JobFinderScreen({ navigation }: any) {
   const loadJobs = async () => {
     try {
       setLoading(true)
+      setErrorMessage("")
       const data = await fetchJobs()
       setJobs(data)
     } catch (error) {
       console.error("Failed to load jobs:", error)
       setJobs([])
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not reach the jobs API. Check internet connection and try again."
+      setErrorMessage(message)
     } finally {
       setLoading(false)
     }
@@ -128,7 +135,7 @@ export default function JobFinderScreen({ navigation }: any) {
                 color={darkMode ? "#9fb4ce" : "#6a7f98"}
               />
               <Text style={[styles.stateText, darkMode && styles.stateTextDark]}>
-                No jobs match your search.
+                {errorMessage || "No jobs match your search."}
               </Text>
             </View>
           }

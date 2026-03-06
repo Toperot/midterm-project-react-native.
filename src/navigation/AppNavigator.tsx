@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import JobFinderScreen from "../screens/JobFinderScreen"
 import SavedJobsScreen from "../screens/SavedJobsScreen"
 import ApplicationFormScreen from "../screens/ApplicationFormScreen"
+import JobDetailsScreen from "../screens/JobDetailsScreen"
 import { ThemeContext } from "../context/ThemeContext"
 
 const Stack = createNativeStackNavigator()
@@ -39,6 +40,7 @@ export default function AppNavigator() {
               name={darkMode ? "sunny-outline" : "moon-outline"}
               size={18}
               color={darkMode ? "#f8d96e" : "#234b7a"}
+              style={{ marginLeft: 1 }}
             />
           </Pressable>
         ),
@@ -46,6 +48,7 @@ export default function AppNavigator() {
     >
       <Stack.Screen name="JobFinder" component={JobFinderScreen} />
       <Stack.Screen name="SavedJobs" component={SavedJobsScreen} />
+      <Stack.Screen name="JobDetails" component={JobDetailsScreen} options={{ title: "Job Details" }} />
       <Stack.Screen name="ApplicationForm" component={ApplicationFormScreen} />
     </Stack.Navigator>
   )

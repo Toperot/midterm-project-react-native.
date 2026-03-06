@@ -28,6 +28,10 @@ export default StyleSheet.create({
     marginBottom: 8,
   },
 
+  infoArea: {
+    marginBottom: 2,
+  },
+
   textDark: {
     color: "#f2f6fb",
   },

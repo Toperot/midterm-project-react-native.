@@ -1,10 +1,25 @@
 import axios from "axios"
+import { v4 as uuidv4 } from "uuid"
 import { Job } from "../types/Job"
 
-export const fetchJobs = async () => {
-  const response = await axios.get("https://empllo.com/api/v1")
+const generateJobId = (job: any, index: number) => {
+  try {
+    return uuidv4()
+  } catch {
+    const title = String(job?.title || "job").toLowerCase().replace(/\s+/g, "-")
+    const time = Date.now()
+    return `${title}-${time}-${index}`
+  }
+}
 
-  const jobs: Job[] = (response.data.jobs || []).map((job: any) => {
+export const fetchJobs = async () => {
+  const response = await axios.get("https://empllo.com/api/v1", {
+    timeout: 15000,
+  })
+
+  const rawJobs = Array.isArray(response.data?.jobs) ? response.data.jobs : []
+
+  const jobs: Job[] = rawJobs.map((job: any, index: number) => {
     const minSalary = typeof job.minSalary === "number" ? job.minSalary : null
     const maxSalary = typeof job.maxSalary === "number" ? job.maxSalary : null
     const currency = job.currency || "USD"
@@ -21,7 +36,7 @@ export const fetchJobs = async () => {
       : "Remote / Not specified"
 
     return {
-      id: String(job.guid || `${job.title}-${job.pubDate || "no-date"}`),
+      id: generateJobId(job, index),
       title: job.title || "Untitled Role",
       company: job.companyName || "Unknown Company",
       salary,

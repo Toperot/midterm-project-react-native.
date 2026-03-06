@@ -117,4 +117,11 @@ export default StyleSheet.create({
     fontWeight: "800",
     fontSize: 14,
   },
+
+  errorText: {
+    color: "#d13c3c",
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 10,
+  },
 })

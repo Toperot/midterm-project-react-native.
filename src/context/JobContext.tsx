@@ -1,5 +1,6 @@
 import React, { createContext, useState } from "react"
 import { Job } from "../types/Job"
+import { getJobFingerprint } from "../utils/jobIdentity"
 
 interface JobContextType {
   savedJobs: Job[]
@@ -13,15 +14,18 @@ export const JobProvider = ({ children }: any) => {
   const [savedJobs, setSavedJobs] = useState<Job[]>([])
 
   const saveJob = (job: Job) => {
-    const exists = savedJobs.find(j => j.id === job.id)
-
-    if (!exists) {
-      setSavedJobs([...savedJobs, job])
-    }
+    setSavedJobs((prevJobs) => {
+      const newFingerprint = getJobFingerprint(job)
+      const exists = prevJobs.some((savedJob) => getJobFingerprint(savedJob) === newFingerprint)
+      if (exists) {
+        return prevJobs.filter((savedJob) => getJobFingerprint(savedJob) !== newFingerprint)
+      }
+      return [...prevJobs, job]
+    })
   }
 
   const removeJob = (id: string) => {
-    setSavedJobs(savedJobs.filter(job => job.id !== id))
+    setSavedJobs((prevJobs) => prevJobs.filter((job) => job.id !== id))
   }
 
   return (
