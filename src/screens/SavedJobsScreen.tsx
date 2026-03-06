@@ -1,5 +1,5 @@
 import React, { useContext } from "react"
-import { View, Text, FlatList } from "react-native"
+import { View, Text, FlatList, Alert } from "react-native"
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { JobContext } from "../context/JobContext"
 import { ThemeContext } from "../context/ThemeContext"
@@ -14,6 +14,21 @@ export default function SavedJobsScreen({ navigation }: any) {
   if (!jobContext) return null
 
   const { savedJobs, removeJob } = jobContext
+
+  const confirmRemove = (id: string, title: string) => {
+    Alert.alert(
+      "Remove saved job?",
+      `"${title}" will be removed from your saved list.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: () => removeJob(id),
+        },
+      ]
+    )
+  }
 
   return (
     <View style={[styles.container, darkMode && styles.containerDark]}>
@@ -50,7 +65,7 @@ export default function SavedJobsScreen({ navigation }: any) {
               navigation={navigation}
               darkMode={darkMode}
               showRemove
-              onRemove={() => removeJob(item.id)}
+              onRemove={() => confirmRemove(item.id, item.title)}
             />
           )}
         />
@@ -58,4 +73,3 @@ export default function SavedJobsScreen({ navigation }: any) {
     </View>
   )
 }
-

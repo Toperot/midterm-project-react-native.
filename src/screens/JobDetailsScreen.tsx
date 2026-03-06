@@ -1,5 +1,5 @@
 import React, { useContext } from "react"
-import { View, Text, Pressable, ScrollView } from "react-native"
+import { View, Text, Pressable, ScrollView, Alert } from "react-native"
 import Ionicons from "@expo/vector-icons/Ionicons"
 import { JobContext } from "../context/JobContext"
 import { ThemeContext } from "../context/ThemeContext"
@@ -93,6 +93,21 @@ export default function JobDetailsScreen({ navigation, route }: any) {
 
   const requirementsItems = toBulletItems(requirementsSection, "No requirements specified.")
   const benefitsItems = toBulletItems(benefitsSection, "No benefits specified.")
+  const handleSavePress = () => {
+    if (!isSaved) {
+      saveJob(job)
+      return
+    }
+
+    Alert.alert(
+      "Remove saved job?",
+      `"${job.title}" will be removed from your saved list.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Remove", style: "destructive", onPress: () => saveJob(job) },
+      ]
+    )
+  }
 
   return (
     <View style={[styles.container, darkMode && styles.containerDark]}>
@@ -139,7 +154,7 @@ export default function JobDetailsScreen({ navigation, route }: any) {
       <View style={[styles.footer, darkMode && styles.footerDark]}>
         <Pressable
           style={[styles.actionBtn, styles.secondaryBtn, darkMode && styles.secondaryBtnDark]}
-          onPress={() => saveJob(job)}
+          onPress={handleSavePress}
         >
           <Ionicons
             name={isSaved ? "bookmark" : "bookmark-outline"}

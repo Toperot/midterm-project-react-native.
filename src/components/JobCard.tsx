@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Alert } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Job } from "../types/Job";
 import { JobContext } from "../context/JobContext";
@@ -29,6 +29,21 @@ export default function JobCard({
 
   const currentFingerprint = getJobFingerprint(job);
   const isSaved = savedJobs.some((savedJob) => getJobFingerprint(savedJob) === currentFingerprint);
+  const handleSavePress = () => {
+    if (!isSaved) {
+      saveJob(job);
+      return;
+    }
+
+    Alert.alert(
+      "Remove saved job?",
+      `"${job.title}" will be removed from your saved list.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Remove", style: "destructive", onPress: () => saveJob(job) },
+      ]
+    );
+  };
 
   return (
     <View style={[styles.card, darkMode && styles.cardDark]}>
@@ -87,7 +102,7 @@ export default function JobCard({
         ) : (
           <Pressable
             style={[styles.actionBtn, styles.actionSecondary, darkMode && styles.actionSecondaryDark]}
-            onPress={() => saveJob(job)}
+            onPress={handleSavePress}
           >
             <Ionicons
               name={isSaved ? "bookmark" : "bookmark-outline"}
