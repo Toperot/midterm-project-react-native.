@@ -1,5 +1,14 @@
 import React, { useState, useContext } from "react"
-import { View, Text, TextInput, Alert, Pressable, ScrollView } from "react-native"
+import {
+  View,
+  Text,
+  TextInput,
+  Alert,
+  Pressable,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native"
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { ThemeContext } from "../context/ThemeContext"
 import styles from "../styles/FormStyles"
@@ -136,8 +145,12 @@ export default function ApplicationFormScreen({ navigation, route }: any) {
   }
 
   return (
-    <View style={[styles.container, darkMode && styles.containerDark]}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <KeyboardAvoidingView
+      style={[styles.container, darkMode && styles.containerDark]}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+    >
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={[styles.formCard, darkMode && styles.formCardDark]}>
           <Text style={[styles.title, darkMode && styles.titleDark]}>Quick Apply</Text>
           <Text style={[styles.subtitle, darkMode && styles.subtitleDark]}>
@@ -210,7 +223,7 @@ export default function ApplicationFormScreen({ navigation, route }: any) {
           </Pressable>
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 

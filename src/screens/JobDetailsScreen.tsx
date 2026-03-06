@@ -6,6 +6,37 @@ import { ThemeContext } from "../context/ThemeContext"
 import { getJobFingerprint } from "../utils/jobIdentity"
 import styles from "../styles/JobDetailsStyles"
 
+const stripEmojis = (value: string) =>
+  value
+    .replace(/[\u{1F300}-\u{1FAFF}]/gu, "")
+    .replace(/[\u{2600}-\u{27BF}]/gu, "")
+
+const normalizeText = (value: string) =>
+  stripEmojis(value)
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|li|ul|ol|h1|h2|h3|h4|h5|h6)>/gi, "\n")
+    .replace(/<li[^>]*>/gi, "- ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/^\s*[^a-zA-Z0-9]*\s*description\s*:?\s*/i, "")
+    .replace(/\r/g, "")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{2,}/g, "\n")
+    .trim()
+
+const getSectionText = (fullText: string, section: "description" | "requirements" | "benefits") => {
+  const pattern = new RegExp(
+    `(?:^|\\s)${section}\\s*:?\\s*([\\s\\S]*?)(?=(?:\\s(?:description|requirements|benefits)\\s*:?)|$)`,
+    "i"
+  )
+  const match = fullText.match(pattern)
+  return match ? match[1].trim() : ""
+}
+
+const getLeadingDescription = (fullText: string) => {
+  const split = fullText.split(/\b(?:requirements|benefits)\s*:?/i)
+  return split[0]?.trim() || ""
+}
+
 export default function JobDetailsScreen({ navigation, route }: any) {
   const job = route?.params?.job
   const source = route?.params?.source === "saved" ? "saved" : "finder"
@@ -18,11 +49,50 @@ export default function JobDetailsScreen({ navigation, route }: any) {
   const { savedJobs, saveJob } = jobContext
   const currentFingerprint = getJobFingerprint(job)
   const isSaved = savedJobs.some((savedJob) => getJobFingerprint(savedJob) === currentFingerprint)
-  const cleanDescription = String(job.description || "")
-    .replace(/<[^>]*>/g, " ")
-    .replace(/^\s*📋?\s*description\s*:?\s*/i, "")
-    .replace(/\s+/g, " ")
-    .trim()
+
+  const cleanText = normalizeText(String(job.description || ""))
+  const descriptionSection = getSectionText(cleanText, "description")
+  const requirementsSection = getSectionText(cleanText, "requirements")
+  const benefitsSection = getSectionText(cleanText, "benefits")
+  const leadingDescription = getLeadingDescription(cleanText)
+
+  const descriptionText =
+    descriptionSection ||
+    leadingDescription ||
+    cleanText ||
+    "No description available."
+
+  const toBulletItems = (sectionText: string, fallback: string) => {
+    const source = sectionText.trim()
+    if (!source) return [fallback]
+
+    const newlineItems = source
+      .split(/\n+/)
+      .map((item) => item.replace(/^(?:\u2022|•|[-*]|\d+[.)])\s*/, "").trim())
+      .filter(Boolean)
+
+    if (newlineItems.length > 1) return newlineItems
+
+    const markerNormalized = source.replace(/\s*(?:\u2022|•|[-*]|\d+[.)])\s+/g, "\n")
+    const splitItems = markerNormalized
+      .split(/\n+/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+
+    if (splitItems.length > 1) return splitItems
+
+    const semicolonItems = source
+      .split(/\s*;\s+/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+
+    if (semicolonItems.length > 1) return semicolonItems
+
+    return [source]
+  }
+
+  const requirementsItems = toBulletItems(requirementsSection, "No requirements specified.")
+  const benefitsItems = toBulletItems(benefitsSection, "No benefits specified.")
 
   return (
     <View style={[styles.container, darkMode && styles.containerDark]}>
@@ -48,9 +118,21 @@ export default function JobDetailsScreen({ navigation, route }: any) {
           </View>
 
           <Text style={[styles.sectionTitle, darkMode && styles.sectionTitleDark]}>Description</Text>
-          <Text style={[styles.description, darkMode && styles.descriptionDark]}>
-            {cleanDescription || "No description available."}
-          </Text>
+          <Text style={[styles.description, darkMode && styles.descriptionDark]}>{descriptionText}</Text>
+
+          <Text style={[styles.sectionTitle, darkMode && styles.sectionTitleDark]}>Requirements</Text>
+          {requirementsItems.map((item, index) => (
+            <Text key={`requirement-${index}`} style={[styles.description, darkMode && styles.descriptionDark]}>
+              {`\u2022 ${item}`}
+            </Text>
+          ))}
+
+          <Text style={[styles.sectionTitle, darkMode && styles.sectionTitleDark]}>Benefits</Text>
+          {benefitsItems.map((item, index) => (
+            <Text key={`benefit-${index}`} style={[styles.description, darkMode && styles.descriptionDark]}>
+              {`\u2022 ${item}`}
+            </Text>
+          ))}
         </View>
       </ScrollView>
 
